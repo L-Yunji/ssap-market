@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSAP MARKET</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./main.css" />
+  </head>
+  <body>
+    <!--Nav bar-->
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/index.html">SSAP Market</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Pricing</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!--chat UI-->
+    <div class="container p-4 detail">
+      <div class="row">
+        <div class="col-3 p-0">
+          <!--채팅방 목록-->
+          <ul class="list-group chat-list"></ul>
+        </div>
+        <div class="col-9 p-0">
+          <div class="chat-room">
+            <ul class="list-group chat-content">
+              <li><span class="chat-box">채팅방1 내용</span></li>
+              <li><span class="chat-box">채팅방1 내용</span></li>
+              <!--내가 보낸 메시지-->
+              <li><span class="chat-box mine">채팅방1 내용</span></li>
+            </ul>
+            <div class="input-group">
+              <input class="form-control" id="chat-input" />
+              <button class="btn btn-secondary" id="send">전송</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--script 설치-->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-storage.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCzraUju2pQMKqedskTjrd6qsCDmF52J48",
+        authDomain: "ssap-market.firebaseapp.com",
+        projectId: "ssap-market",
+        storageBucket: "ssap-market.appspot.com",
+        messagingSenderId: "468507169377",
+        appId: "1:468507169377:web:a58927b1720817d7fa9020",
+        measurementId: "G-TM3BTJKEJK",
+      };
+      firebase.initializeApp(firebaseConfig);
+    </script>
+    <script>
+      const db = firebase.firestore();
+      const storage = firebase.storage();
+      var 내uid = JSON.parse(localStorage.getItem("user")).uid;
+
+      $("#send").click(function () {
+        var 데이터 = {
+          content: $("#chat-input").val(),
+          date: new Date(),
+          uid: 내uid,
+        };
+
+        db.collection("chatroom")
+          .doc(채팅방id)
+          .collection("messages")
+          .add({ 데이터 });
+      });
+
+      var 채팅방id;
+
+      db.collection("chatroom")
+        .where("who", "array-contains", 내uid)
+        .get()
+        .then((result) => {
+          result.forEach((a) => {
+            console.log(a.data());
+            var template = `
+            <li class="list-group-item">
+              <h6>${a.data().product}</h6>
+              <h6 class="text-small">${a.id}</h6>
+            </li>
+            `;
+            $(".chat-list").append(template);
+            $(".list-group-item").click(function (e) {
+              채팅방id = $(this).children(".text-small").text();
+
+              e.stopImmediatePropagation();
+
+              db.collection("chatroom")
+                .doc(채팅방id)
+                .collection("messages")
+                .orderBy("데이터.date")
+                .onSnapshot((result) => {
+                  $(".chat-content").html("");
+                  result.forEach((a) => {
+                    var 템플릿 = `<li><span class="chat-box">${
+                      a.data().데이터.content
+                    }</span></li>`;
+                    $(".chat-content").append(템플릿);
+                  });
+                });
+            });
+          });
+        });
+    </script>
+  </body>
+</html>
